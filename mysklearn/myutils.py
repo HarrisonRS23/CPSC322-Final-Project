@@ -764,3 +764,35 @@ def perform_analysis(
             tree_recall:.2f}, precision = {
             tree_precision:.2f}, F1 = {
                 tree_f1:.2f}")
+
+def classify_position(position: str) -> str:
+    """
+    Classifies a soccer player's position into forwards, midfielders, defenders, or goalkeepers.
+
+    Args:
+        position (str): The position code of the player (e.g., 'st', 'cm', 'gk').
+
+    Returns:
+        str: The classification of the position ('Forward', 'Midfielder', 'Defender', or 'Goalkeeper').
+    """
+    # Define position groups
+    forwards = {'st', 'cf', 'lw', 'lf', 'rw', 'rf'}
+    midfielders = {'lm', 'cm', 'cam', 'cdm', 'rm'}
+    defenders = {'lwb', 'lb', 'cb', 'rb', 'rwb'}
+    goalkeepers = {'gk'}
+
+    # Normalize input to lowercase
+    position = position.lower()
+
+    # Classify position
+    if position in forwards:
+        return 'Forward'
+    elif position in midfielders:
+        return 'Midfielder'
+    elif position in defenders:
+        return 'Defender'
+    elif position in goalkeepers:
+        return 'Goalkeeper'
+    else:
+        return 'Unknown Position'
+
