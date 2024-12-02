@@ -767,10 +767,11 @@ def perform_analysis(
 
 def classify_position(position: str) -> str:
     """
-    Classifies a soccer player's position into forwards, midfielders, defenders, or goalkeepers.
+    Classifies a soccer player's position into forwards, midfielders, defenders, or goalkeepers
+    based on the majority. If there's no majority, returns the lexicographically smallest position.
 
     Args:
-        position (str): The position code of the player (e.g., 'st', 'cm', 'gk').
+        position (str): The position code(s) of the player (e.g., 'st', 'cm', 'gk' or 'cf,rw,st').
 
     Returns:
         str: The classification of the position ('Forward', 'Midfielder', 'Defender', or 'Goalkeeper').
@@ -781,18 +782,26 @@ def classify_position(position: str) -> str:
     defenders = {'lwb', 'lb', 'cb', 'rb', 'rwb'}
     goalkeepers = {'gk'}
 
-    # Normalize input to lowercase
-    position = position.lower()
+    # Normalize input to lowercase and split multiple positions
+    positions = position.lower().split(',')
 
-    # Classify position
-    if position in forwards:
-        return 'Forward'
-    elif position in midfielders:
-        return 'Midfielder'
-    elif position in defenders:
-        return 'Defender'
-    elif position in goalkeepers:
-        return 'Goalkeeper'
-    else:
-        return 'Unknown Position'
+    # Count occurrences for each group
+    counts = {"Forward": 0, "Midfielder": 0, "Defender": 0, "Goalkeeper": 0}
+
+    for pos in positions:
+        if pos in forwards:
+            counts["Forward"] += 1
+        elif pos in midfielders:
+            counts["Midfielder"] += 1
+        elif pos in defenders:
+            counts["Defender"] += 1
+        elif pos in goalkeepers:
+            counts["Goalkeeper"] += 1
+
+    # Determine the majority classification
+    max_count = max(counts.values())
+    majority_positions = [key for key, value in counts.items() if value == max_count]
+
+    # Return the majority or lexicographically smallest if tied
+    return sorted(majority_positions)[0]
 
