@@ -1,7 +1,137 @@
 from mysklearn.mysimplelinearregressor import MySimpleLinearRegressor
 import operator
 import numpy as np
+import random
+from collections import Counter
 from mysklearn import myutils
+from collections import Counter
+import numpy as np
+import random
+
+class MyRandomForestClassifier:
+    def __init__(self, n_trees, max_features=5):
+        """
+        Initialize the Random Forest Classifier.
+
+        Args:
+            n_trees (int): Number of trees in the forest.
+            max_features (int): Maximum number of features to consider when splitting a node.
+        """
+        self.n_trees = n_trees
+        self.max_features = max_features
+        self.trees = []  # Stores trained decision trees
+        self.tree_accuracies = []  # Stores validation accuracies of trees
+
+    def fit(self, X, y):
+        """
+        Fit the Random Forest to the data.
+
+        Args:
+            X (list of list of obj): Training feature data.
+            y (list of obj): Training labels.
+        """
+        X_train, y_train, X_val, y_val = self._train_test_split(X, y, test_size=0.33)
+        bootstrap_samples = [self._bootstrap_sample(X_train, y_train) for _ in range(self.n_trees)]
+
+        for X_boot, y_boot in bootstrap_samples:
+            tree = MyDecisionTreeClassifier()
+            selected_features = self._random_attribute_subset(len(X[0]), self.max_features)
+            tree.fit(X_boot, y_boot)
+            
+            # Evaluate the tree's accuracy on the validation set
+            accuracy = self._evaluate_tree(tree, X_val, y_val)
+            self.trees.append(tree)
+            self.tree_accuracies.append(accuracy)
+
+        # Sort trees based on accuracy and keep only the most accurate
+        sorted_trees = sorted(
+            zip(self.trees, self.tree_accuracies), 
+            key=lambda item: item[1], 
+            reverse=True
+        )
+        self.trees, self.tree_accuracies = zip(*sorted_trees[:self.n_trees])
+        self.trees = list(self.trees)
+        self.tree_accuracies = list(self.tree_accuracies)
+
+    def _train_test_split(self, X, y, test_size=0.33):
+        """
+        Split the data into training and test sets.
+
+        Args:
+            X (list of list of obj): Feature data.
+            y (list of obj): Labels.
+            test_size (float): Proportion of data to use for testing.
+
+        Returns:
+            tuple: Training and test sets.
+        """
+        indices = np.arange(len(X))
+        np.random.shuffle(indices)
+        split_idx = int(len(X) * (1 - test_size))
+        X_train, y_train = [X[i] for i in indices[:split_idx]], [y[i] for i in indices[:split_idx]]
+        X_test, y_test = [X[i] for i in indices[split_idx:]], [y[i] for i in indices[split_idx:]]
+        return X_train, y_train, X_test, y_test
+
+    def _bootstrap_sample(self, X, y):
+        """
+        Generate a bootstrap sample.
+
+        Args:
+            X (list of list of obj): Feature data.
+            y (list of obj): Labels.
+
+        Returns:
+            tuple: Bootstrapped training data and labels.
+        """
+        n = len(X)
+        indices = np.random.choice(range(n), n, replace=True)
+        return [X[i] for i in indices], [y[i] for i in indices]
+
+    def _random_attribute_subset(self, n_features, num_to_select):
+        """
+        Select a random subset of attributes.
+
+        Args:
+            n_features (int): Total number of features.
+            num_to_select (int): Number of features to select.
+
+        Returns:
+            list of int: Indices of selected features.
+        """
+        all_features = list(range(n_features))
+        np.random.shuffle(all_features)
+        return all_features[:num_to_select]
+
+    def _evaluate_tree(self, tree, X_val, y_val):
+        """
+        Evaluate a tree's accuracy on validation data.
+
+        Args:
+            tree (MyDecisionTreeClassifier): A decision tree classifier.
+            X_val (list of list of obj): Validation feature data.
+            y_val (list of obj): Validation labels.
+
+        Returns:
+            float: Accuracy of the tree.
+        """
+        predictions = tree.predict(X_val)
+        return sum(pred == true for pred, true in zip(predictions, y_val)) / len(y_val) if len(y_val) > 0 else 0
+
+    def predict(self, X):
+        """
+        Predict classes using the forest.
+
+        Args:
+            X (list of list of obj): Test feature data.
+
+        Returns:
+            list of obj: Predicted labels.
+        """
+        tree_predictions = [tree.predict(X) for tree in self.trees]
+        tree_predictions = np.array(tree_predictions).T
+        return [Counter(row).most_common(1)[0][0] for row in tree_predictions]
+    
+    
 """
 Programmer: Harrison Sheldon
 Class: CSPC 322, Fall 2024
