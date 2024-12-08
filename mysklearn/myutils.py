@@ -599,7 +599,7 @@ def extract_domains(X_train, column_names):
     Returns:
         dict: A dictionary where keys are column names and values are lists of unique values.
     """
-    if not X_train or not column_names:
+    if len(X_train) == 0 or len(column_names) == 0:
         return {}  # Return an empty dictionary if input is empty
 
     attribute_domains = {}
@@ -612,7 +612,6 @@ def extract_domains(X_train, column_names):
         attribute_domains[col_name] = domain
 
     return attribute_domains
-
 
 def get_header(X_train):
     """
@@ -673,7 +672,6 @@ def partition_instances(instances, attribute_index, attribute_name=None):
             partitions[attribute_value] = []
         partitions[attribute_value].append(row)
     return partitions
-
 
 def perform_analysis(
         combined_list,

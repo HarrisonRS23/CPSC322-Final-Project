@@ -5,16 +5,12 @@ import numpy as np
 from mysklearn.myclassifiers import MyDecisionTreeClassifier
 from mysklearn.myclassifiers import MyRandomForestClassifier
 
-# Random forest testing 
+import pytest
+from mysklearn.myclassifiers import MyRandomForestClassifier
+from mysklearn.myclassifiers import MyDecisionTreeClassifier
+from collections import Counter
 
-def test_random_forest_fit():
-    # TODO : implement this
-    assert False == True
-
-def test_random_forest_predict():
-    # TODO: implement this
-    assert False == True
-
+# Test data
 X_train = [
     ["Senior", "Java", "no", "no"],
     ["Senior", "Java", "no", "yes"],
@@ -45,45 +41,73 @@ y_train = [
     "True",
     "True",
     "True",
-    "False"]
-
-# MA7 (fake) iPhone purchases dataset
-header_iphone = ["standing", "job_status", "credit_rating"]
-X_train_iphone = [
-    [1, 3, "fair"],
-    [1, 3, "excellent"],
-    [2, 3, "fair"],
-    [2, 2, "fair"],
-    [2, 1, "fair"],
-    [2, 1, "excellent"],
-    [2, 1, "excellent"],
-    [1, 2, "fair"],
-    [1, 1, "fair"],
-    [2, 2, "fair"],
-    [1, 2, "excellent"],
-    [2, 2, "excellent"],
-    [2, 3, "fair"],
-    [2, 2, "excellent"],
-    [2, 3, "fair"]
+    "False"
 ]
-y_train_iphone = [
-    "no",
-    "no",
-    "yes",
-    "yes",
-    "yes",
-    "no",
-    "yes",
-    "no",
-    "yes",
-    "yes",
-    "yes",
-    "yes",
-    "yes",
-    "no",
-    "yes"]
 
-# TODO: copy your test_myclassifiers.py solution from PA4-6 here
+X_test = [
+    ["Junior", "Java", "yes", "no"],
+    ["Mid", "Python", "no", "no"],
+    ["Senior", "R", "yes", "yes"]
+]
+
+
+def test_random_forest_fit():
+    """Test the fit method of MyRandomForestClassifier."""
+    forest_classifier = MyRandomForestClassifier(n_trees=10, max_features=2)
+    forest_classifier.fit(X_train, y_train)
+
+    # Check that trees were created
+    assert forest_classifier.trees is not None
+    assert len(forest_classifier.trees) > 0
+
+    # Check that the trees are instances of MyDecisionTreeClassifier
+    assert all(isinstance(tree, MyDecisionTreeClassifier) for tree in forest_classifier.trees)
+
+    # Check that the number of trees does not exceed n_trees
+    assert len(forest_classifier.trees) <= forest_classifier.n_trees
+
+
+def test_random_forest_predict():
+    """Test the predict method of MyRandomForestClassifier."""
+    forest_classifier = MyRandomForestClassifier(n_trees=10, max_features=2)
+    forest_classifier.fit(X_train, y_train)
+
+    # Predict on the test data
+    predictions = forest_classifier.predict(X_test)
+
+    # Check that predictions match the length of the test data
+    assert len(predictions) == len(X_test)
+
+    # Check that predictions are among the labels in the training data
+    assert all(pred in set(y_train) for pred in predictions)
+
+
+def test_random_forest_consistency():
+    """Test the consistency of MyRandomForestClassifier."""
+    forest_classifier = MyRandomForestClassifier(n_trees=10, max_features=2)
+    forest_classifier.fit(X_train, y_train)
+
+    # Predict multiple times to ensure consistency
+    predictions1 = forest_classifier.predict(X_test)
+    predictions2 = forest_classifier.predict(X_test)
+    assert predictions1 == predictions2
+
+
+def test_random_forest_parameterization():
+    """Test different parameter settings for Random Forest."""
+    for n_trees, max_features in [(5, 2), (10, 3), (20, 4)]:
+        forest_classifier = MyRandomForestClassifier(n_trees=n_trees, max_features=max_features)
+        forest_classifier.fit(X_train, y_train)
+
+        # Check that the correct number of trees was created
+        assert len(forest_classifier.trees) == n_trees
+
+        # Check that predictions are valid
+        predictions = forest_classifier.predict(X_test)
+        assert len(predictions) == len(X_test)
+        assert all(pred in set(y_train) for pred in predictions)
+
+
 
 
 def test_decision_tree_classifier_fit():
@@ -185,8 +209,7 @@ def test_decision_tree_classifier_fit():
 
 def test_decision_tree_classifier_predict():
     # True, False, None
-    test = [["Junior", "Java", "yes", "no"], ["Junior", "Java",
-                                              "yes", "yes"], ["Intern", "Java", "yes", "yes"]]
+    test = [["Junior", "Java", "yes", "no"], ["Junior", "Java", "yes", "yes"], ["Intern", "Java", "yes", "yes"]]
     expected = ["True", "False", None]
     tree = MyDecisionTreeClassifier()
     tree.fit(X_train, y_train)
