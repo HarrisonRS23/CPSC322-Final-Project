@@ -244,59 +244,55 @@ def kfold_split(X, n_splits=5, random_state=None, shuffle=False):
     return final_folds
 
 
+import numpy as np  # Ensure NumPy is imported for random operations
+
 def stratified_kfold_split(X, y, n_splits=5, random_state=None, shuffle=False):
-    """Split dataset into stratified cross validation folds.
+    """
+    Split dataset into stratified cross-validation folds.
 
     Args:
-        X(list of list of obj): The list of instances (samples).
-            The shape of X is (n_samples, n_features)
-        y(list of obj): The target y values (parallel to X).
-            The shape of y is n_samples
-        n_splits(int): Number of folds.
-        random_state(int): integer used for seeding a random number generator for reproducible results
-        shuffle(bool): whether or not to randomize the order of the instances before creating folds
+        X (list of list of obj): The list of instances (samples).
+            The shape of X is (n_samples, n_features).
+        y (list of obj): The target y values (parallel to X).
+            The shape of y is n_samples.
+        n_splits (int): Number of folds.
+        random_state (int): Integer used for seeding a random number generator for reproducible results.
+        shuffle (bool): Whether or not to randomize the order of the instances before creating folds.
 
     Returns:
-        folds(list of 2-item tuples): The list of folds where each fold is defined as a 2-item tuple
-            The first item in the tuple is the list of training set indices for the fold
-            The second item in the tuple is the list of testing set indices for the fold
-
-    Notes:
-        Loosely based on sklearn's StratifiedKFold split():
-            https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html#sklearn.model_selection.StratifiedKFold
+        folds (list of 2-item tuples): The list of folds where each fold is defined as a 2-item tuple.
+            The first item in the tuple is the list of training set indices for the fold.
+            The second item in the tuple is the list of testing set indices for the fold.
     """
-    # Seed the random generator for reproducibility, if required
+    # Seed the random generator for reproducibility
     if random_state is not None:
         np.random.seed(random_state)
 
-    # Create a dictionary to map each unique label to its corresponding indices
+    # Create a dictionary to group indices by label
     label_indices = {}
-    for id, label in enumerate(y):
+    for idx, label in enumerate(y):
         if label not in label_indices:
             label_indices[label] = []
-        label_indices[label].append(id)
+        label_indices[label].append(idx)
 
-    # Shuffle each label group if shuffle is True
+    # Shuffle indices within each label group if shuffle is True
     if shuffle:
         for indices in label_indices.values():
-            np.random.shuffle(indices)
-            np.random.shuffle(indices)
             np.random.shuffle(indices)
 
     # Initialize folds
     folds = [[] for _ in range(n_splits)]
 
-    # Distribute each label's indices across the folds
-    for label, indices in label_indices.items():
-        for i, id in enumerate(indices):
-            folds[i % n_splits].append(id)
+    # Distribute indices for each label group across folds
+    for indices in label_indices.values():
+        for i, idx in enumerate(indices):
+            folds[i % n_splits].append(idx)
 
-    # Generate training and testing sets for each fold
+    # Create stratified folds
     stratified_folds = []
     for i in range(n_splits):
         test_indices = folds[i]
-        train_indices = [id for j in range(
-            n_splits) if j != i for id in folds[j]]
+        train_indices = [idx for j in range(n_splits) if j != i for idx in folds[j]]
         stratified_folds.append((train_indices, test_indices))
 
     return stratified_folds

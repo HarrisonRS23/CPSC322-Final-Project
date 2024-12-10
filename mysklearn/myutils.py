@@ -85,66 +85,58 @@ def random_subsample(
 
     return average_accuracy, average_error_rate
 
-
 def cross_val_predict(
         X,
         y,
         classifier,
         k=10,
         stratify=True,
-        random_state=0,
-        shuffle=False):
-    """
-    Perform k-fold cross-validation multiple times to evaluate classifier performance.
+        random_state=42,
+        shuffle=True):
+        """
+        Perform k-fold cross-validation to evaluate classifier performance.
 
-    Args:
-        X (list of list of obj): The list of instances (samples).
-        y (list of obj): The target y values (parallel to X).
-        classifier (obj): Classifier instance with fit and predict methods (e.g., MyKNeighborsClassifier or MyDummyClassifier).
-        k (int): Number of times to repeat the entire cross-validation process.
-        stratify (bool): Whether to use stratified k-fold cross-validation.
-        random_state (int, optional): Random seed for reproducibility.
-        shuffle (bool): If True, shuffle the data before splitting.
+        Args:
+            X (list of list of obj): The list of instances (features).
+            y (list of obj): The target values (parallel to X).
+            classifier (obj): Classifier instance with fit and predict methods (e.g., MyNaiveBayesClassifier).
+            k (int): Number of folds for cross-validation.
+            stratify (bool): Whether to use stratified k-fold cross-validation.
+            random_state (int): Random seed for reproducibility.
+            shuffle (bool): Whether to shuffle the data before splitting.
 
-    Returns:
-        tuple: Overall mean accuracy and mean error rate across all k rounds of cross-validation.
-    """
-    all_accuracies = []
-    n_splits = 5
+        Returns:
+            float: Mean accuracy across all folds.
+        """
+        all_accuracies = []
 
-    for i in range(k):
+        # Perform stratified or regular k-fold splitting
         if stratify:
             folds = myevaluation.stratified_kfold_split(
-                X, y, random_state=random_state, shuffle=shuffle)
+                X, y, n_splits=k, random_state=random_state, shuffle=shuffle)
         else:
             folds = myevaluation.kfold_split(
-                X, random_state=random_state, shuffle=shuffle)
+                X, n_splits=k, random_state=random_state, shuffle=shuffle)
 
-        fold_accuracies = []
-
+        # Perform cross-validation for each fold
         for train_indices, test_indices in folds:
-            # Split data according to current fold
+            # Create training and testing sets
             X_train = [X[index] for index in train_indices]
             X_test = [X[index] for index in test_indices]
             y_train = [y[index] for index in train_indices]
             y_test = [y[index] for index in test_indices]
 
-            # Train and predict with classifier
+            # Train and predict using the classifier
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
 
-            # Calculate accuracy and append to fold_accuracies
-            accuracy = myevaluation.accuracy_score(
-                y_test, y_pred, normalize=True)
-            fold_accuracies.append(accuracy)
+            # Calculate accuracy for this fold
+            accuracy = myevaluation.accuracy_score(y_test, y_pred)
+            all_accuracies.append(accuracy)
 
-        # Calculate mean accuracy for this round and add to all_accuracies
-        all_accuracies.append(sum(fold_accuracies) / n_splits)
-
-    # Calculate overall mean accuracy and error rate across all k rounds
-    overall_mean_accuracy = sum(all_accuracies) / k
-    overall_error_rate = 1 - overall_mean_accuracy
-    return overall_mean_accuracy, overall_error_rate
+        # Calculate and return the mean accuracy
+        overall_mean_accuracy = sum(all_accuracies) / len(all_accuracies)
+        return overall_mean_accuracy
 
 
 def check_index(val, labels):
