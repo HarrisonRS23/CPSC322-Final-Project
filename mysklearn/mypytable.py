@@ -484,6 +484,31 @@ class MyPyTable:
 
         # Create a MyPyTable with the read column names and data
         return MyPyTable(column_names=column_names, data=data)
+    
+    def add_column(self, column_name, values):
+        """
+        Adds a new column to the table.
+
+        Parameters:
+        column_name (str): The name of the new column to add.
+        values (list): A list of values to populate the new column. Must match the number of rows in the table.
+
+        Returns:
+        None
+
+        Raises:
+        ValueError: If the number of values does not match the number of rows in the table.
+        """
+        if len(self.data) != len(values):
+            raise ValueError("The number of values must match the number of rows in the table.")
+
+        if column_name in self.column_names:
+            raise ValueError(f"The column name '{column_name}' already exists in the table.")
+
+        self.column_names.append(column_name)
+
+        for row, value in zip(self.data, values):
+            row.append(value)
 
     def remove_column(self, column_name):
         """Removes a column from the table.
