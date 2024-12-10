@@ -124,52 +124,59 @@ def cross_val_predict(
         classifier,
         k=10,
         stratify=True,
-        random_state=42,
-        shuffle=True):
-        """
-        Perform k-fold cross-validation to evaluate classifier performance.
+        random_state=0,
+        shuffle=False):
+    """
+    Perform k-fold cross-validation multiple times to evaluate classifier performance.
 
-        Args:
-            X (list of list of obj): The list of instances (features).
-            y (list of obj): The target values (parallel to X).
-            classifier (obj): Classifier instance with fit and predict methods (e.g., MyNaiveBayesClassifier).
-            k (int): Number of folds for cross-validation.
-            stratify (bool): Whether to use stratified k-fold cross-validation.
-            random_state (int): Random seed for reproducibility.
-            shuffle (bool): Whether to shuffle the data before splitting.
+    Args:
+        X (list of list of obj): The list of instances (samples).
+        y (list of obj): The target y values (parallel to X).
+        classifier (obj): Classifier instance with fit and predict methods (e.g., MyKNeighborsClassifier or MyDummyClassifier).
+        k (int): Number of times to repeat the entire cross-validation process.
+        stratify (bool): Whether to use stratified k-fold cross-validation.
+        random_state (int, optional): Random seed for reproducibility.
+        shuffle (bool): If True, shuffle the data before splitting.
 
-        Returns:
-            float: Mean accuracy across all folds.
-        """
-        all_accuracies = []
+    Returns:
+        tuple: Overall mean accuracy and mean error rate across all k rounds of cross-validation.
+    """
+    all_accuracies = []
+    n_splits = 5
 
-        # Perform stratified or regular k-fold splitting
+    for i in range(k):
         if stratify:
             folds = myevaluation.stratified_kfold_split(
-                X, y, n_splits=k, random_state=random_state, shuffle=shuffle)
+                X, y, random_state=random_state, shuffle=shuffle)
         else:
             folds = myevaluation.kfold_split(
-                X, n_splits=k, random_state=random_state, shuffle=shuffle)
+                X, random_state=random_state, shuffle=shuffle)
 
-        # Perform cross-validation for each fold
+        fold_accuracies = []
+
         for train_indices, test_indices in folds:
-            # Create training and testing sets
+            # Split data according to current fold
             X_train = [X[index] for index in train_indices]
             X_test = [X[index] for index in test_indices]
             y_train = [y[index] for index in train_indices]
             y_test = [y[index] for index in test_indices]
 
-            # Train and predict using the classifier
+            # Train and predict with classifier
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
 
-            # Calculate accuracy for this fold
-            accuracy = myevaluation.accuracy_score(y_test, y_pred)
-            all_accuracies.append(accuracy)
+            # Calculate accuracy and append to fold_accuracies
+            accuracy = myevaluation.accuracy_score(
+                y_test, y_pred, normalize=True)
+            fold_accuracies.append(accuracy)
 
-        # Calculate and return the mean accuracy
-        overall_mean_accuracy = sum(all_accuracies) / len(all_accuracies)
-        return overall_mean_accuracy
+        # Calculate mean accuracy for this round and add to all_accuracies
+        all_accuracies.append(sum(fold_accuracies) / n_splits)
+
+    # Calculate overall mean accuracy and error rate across all k rounds
+    overall_mean_accuracy = sum(all_accuracies) / k
+    overall_error_rate = 1 - overall_mean_accuracy
+    return overall_mean_accuracy, overall_error_rate
 
 
 def check_index(val, labels):
@@ -698,95 +705,41 @@ def partition_instances(instances, attribute_index, attribute_name=None):
         partitions[attribute_value].append(row)
     return partitions
 
-def perform_analysis(
-        combined_list,
-        target,
-        knn_classifier,
-        dummy_classifier,
-        naive_class,
-        tree_classifier):
+def perform_analysis(features, targets, knn_classifier, dummy_classifier, naive_class, tree_classifier):
     """
-    Function to repeat
+    Perform cross-validation and print accuracy and error rate for multiple classifiers.
+
+    Args:
+        features (list of list of obj): The feature matrix.
+        targets (list of obj): The target values.
+        knn_classifier: KNN classifier instance.
+        dummy_classifier: Dummy classifier instance.
+        naive_class: Naive Bayes classifier instance.
+        tree_classifier: Decision tree classifier instance.
     """
-    # Perform 10-fold cross-validation with stratified
+    # KNN Classifier
     knn_accuracy, knn_error_rate = cross_val_predict(
-        combined_list, target, knn_classifier, stratify=True, random_state=42)
+        knn_classifier, features, targets, k=10, stratify=True
+    )
+    print(f"KNN Classifier: accuracy = {knn_accuracy:.2f}, error rate = {knn_error_rate:.2f}")
+    
+    # Dummy Classifier
     dummy_accuracy, dummy_error_rate = cross_val_predict(
-        combined_list, target, dummy_classifier, stratify=True, random_state=42)
+        dummy_classifier, features, targets, k=10, stratify=True
+    )
+    print(f"Dummy Classifier: accuracy = {dummy_accuracy:.2f}, error rate = {dummy_error_rate:.2f}")
+
+    # Naive Bayes Classifier
     naive_accuracy, naive_error_rate = cross_val_predict(
-        combined_list, target, naive_class, stratify=True, random_state=42)
+        naive_class, features, targets, k=10, stratify=True
+    )
+    print(f"Naive Bayes Classifier: accuracy = {naive_accuracy:.2f}, error rate = {naive_error_rate:.2f}")
+
+    # Decision Tree Classifier
     tree_accuracy, tree_error_rate = cross_val_predict(
-        combined_list, target, tree_classifier, stratify=True, random_state=42)
-
-    print("(BONUS) Stratified 10-Fold Cross Validation")
-
-    print("Accuracy and Error Rate")
-    # Print results for kNN, Dummy, and Naive classifiers
-    print(
-        f"k Nearest Neighbors Classifier: accuracy = {
-            knn_accuracy:.2f}, error rate = {
-            knn_error_rate:.2f}")
-    print(
-        f"Dummy Classifier: accuracy = {
-            dummy_accuracy:.2f}, error rate = {
-            dummy_error_rate:.2f}")
-    print(
-        f"Naive Classifier: accuracy = {
-            naive_accuracy:.2f}, error rate = {
-            naive_error_rate:.2f}")
-    print(
-        f"Tree Classifier: accuracy = {
-            tree_accuracy:.2f}, error rate = {
-            tree_error_rate:.2f}")
-
-    print("Precision, recall, and F1 measure")
-    # Get predictions from both classifiers
-    knn_predictions = knn_classifier.predict(combined_list)
-    dummy_predictions = dummy_classifier.predict(combined_list)
-    naive_predictions = naive_class.predict(combined_list)
-    tree_predictions = tree_classifier.predict(combined_list)
-
-    # Calculate metrics for all classifiers
-    knn_recall = myevaluation.binary_recall_score(target, knn_predictions)
-    dummy_recall = myevaluation.binary_recall_score(target, dummy_predictions)
-    naive_recall = myevaluation.binary_recall_score(target, naive_predictions)
-    tree_recall = myevaluation.binary_recall_score(target, tree_predictions)
-
-    knn_precision = myevaluation.binary_precision_score(
-        target, knn_predictions)
-    dummy_precision = myevaluation.binary_precision_score(
-        target, dummy_predictions)
-    naive_precision = myevaluation.binary_precision_score(
-        target, naive_predictions)
-    tree_precision = myevaluation.binary_precision_score(
-        target, tree_predictions)
-
-    knn_f1 = myevaluation.binary_f1_score(target, knn_predictions)
-    dummy_f1 = myevaluation.binary_f1_score(target, dummy_predictions)
-    naive_f1 = myevaluation.binary_f1_score(target, naive_predictions)
-    tree_f1 = myevaluation.binary_f1_score(target, tree_predictions)
-
-    # Print the results in a condensed format
-    print(
-        f"kNN Classifier: recall = {
-            knn_recall:.2f}, precision = {
-            knn_precision:.2f}, F1 = {
-                knn_f1:.2f}")
-    print(
-        f"Dummy Classifier: recall = {
-            dummy_recall:.2f}, precision = {
-            dummy_precision:.2f}, F1 = {
-                dummy_f1:.2f}")
-    print(
-        f"Naive Classifier: recall = {
-            naive_recall:.2f}, precision = {
-            naive_precision:.2f}, F1 = {
-                naive_f1:.2f}")
-    print(
-        f"Tree Classifier: recall = {
-            tree_recall:.2f}, precision = {
-            tree_precision:.2f}, F1 = {
-                tree_f1:.2f}")
+        tree_classifier, features, targets, k=10, stratify=True
+    )
+    print(f"Decision Tree Classifier: accuracy = {tree_accuracy:.2f}, error rate = {tree_error_rate:.2f}")
 
 def classify_position(position: str) -> str:
     """
