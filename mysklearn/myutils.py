@@ -719,25 +719,25 @@ def perform_analysis(features, targets, knn_classifier, dummy_classifier, naive_
     """
     # KNN Classifier
     knn_accuracy, knn_error_rate = cross_val_predict(
-        knn_classifier, features, targets, k=10, stratify=True
+       classifier= knn_classifier, X = features, y = targets, k=10, stratify=False
     )
     print(f"KNN Classifier: accuracy = {knn_accuracy:.2f}, error rate = {knn_error_rate:.2f}")
     
     # Dummy Classifier
     dummy_accuracy, dummy_error_rate = cross_val_predict(
-        dummy_classifier, features, targets, k=10, stratify=True
+        classifier= dummy_classifier, X = features, y = targets, k=10, stratify=False
     )
     print(f"Dummy Classifier: accuracy = {dummy_accuracy:.2f}, error rate = {dummy_error_rate:.2f}")
 
     # Naive Bayes Classifier
     naive_accuracy, naive_error_rate = cross_val_predict(
-        naive_class, features, targets, k=10, stratify=True
+        classifier= naive_class, X = features, y = targets, k=10, stratify=False
     )
     print(f"Naive Bayes Classifier: accuracy = {naive_accuracy:.2f}, error rate = {naive_error_rate:.2f}")
 
     # Decision Tree Classifier
     tree_accuracy, tree_error_rate = cross_val_predict(
-        tree_classifier, features, targets, k=10, stratify=True
+        classifier= tree_classifier, X = features, y = targets, k=10, stratify=False
     )
     print(f"Decision Tree Classifier: accuracy = {tree_accuracy:.2f}, error rate = {tree_error_rate:.2f}")
 
