@@ -11,6 +11,39 @@ import numpy as np  # use numpy's random number generation
 from mysklearn import myevaluation
 from tabulate import tabulate
 
+def group_attributes(lists):
+    """
+    Groups multiple lists into a list of lists.
+
+    This function takes a list of lists (e.g., one list for cylinders, one for weight, and one for acceleration)
+    and combines the corresponding values from each list into sublists.
+
+    Parameters:
+    ----------
+    lists : list of lists
+        A list where each element is a list representing a feature (e.g., cylinders, weight, acceleration).
+
+    Returns:
+    -------
+    grouped_data : list of lists
+        A list of lists, where each sublist contains values from the corresponding input lists.
+
+    Notes:
+    ------
+    - The function assumes all input lists are of the same length.
+    """
+    grouped_data = []
+
+    # Determine the number of lists and the length of each list
+    num_lists = len(lists)
+    num_items = len(lists[0])  # Assuming all lists are of the same length
+
+    # Iterate over the index of the lists
+    for i in range(num_items):
+        # Group the ith element from each list into a sublist
+        grouped_data.append([lists[j][i] for j in range(num_lists)])
+
+    return grouped_data
 
 def shuffle(list1, list2, random_state):
     """
