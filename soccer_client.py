@@ -2,8 +2,10 @@ import requests
 import json
 import pickle
 
-# Load the header attributes dynamically from the pickled tree
 def load_tree_header():
+    """
+    Load the header from the pickled decision tree.
+    """
     try:
         with open("soccer_tree.p", "rb") as infile:
             header, _ = pickle.load(infile)
@@ -14,27 +16,23 @@ def load_tree_header():
 
 header = load_tree_header()
 
-# Base URL for the Flask app
+# Define the API base URL
 url = "https://cpsc322-final-project-f3on.onrender.com/predict?"
 
-# Get input for each attribute dynamically based on the header
+# Collect user input for each attribute
 query_params = {attr: input(f"Enter value for {attr}: ") for attr in header}
 
-# Construct the query string
+# Construct the full query URL
 query_string = "&".join([f"{key}={value}" for key, value in query_params.items()])
 full_url = url + query_string
 print(f"Request URL: {full_url}")
 
-# Make the GET request
+# Send the GET request
 response = requests.get(full_url)
 
-# Check the response status
-print("Status code:", response.status_code)
-
+# Parse and display the response
 if response.status_code == 200:
-    # Parse and display the JSON response
     json_obj = json.loads(response.text)
-    print("Response JSON:", json_obj)
     prediction = json_obj.get("prediction", "No prediction available")
     print("Predicted Soccer Position:", prediction)
 else:
