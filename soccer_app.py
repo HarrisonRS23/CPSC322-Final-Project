@@ -64,6 +64,7 @@ def predict_player_position(unseen_instance):
     Predict the position of a soccer player using the decision tree.
     """
     try:
+        # Ensure the header matches the tree
         return tdidt_classifier(soccer_tree, header, unseen_instance)
     except Exception as e:
         print(f"Error predicting position: {e}")

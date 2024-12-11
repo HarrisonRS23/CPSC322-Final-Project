@@ -1,10 +1,9 @@
 import pickle
 from mysklearn.myclassifiers import MyDecisionTreeClassifier
 
-# Step 1: Load and preprocess your soccer dataset
 def load_soccer_data():
     """
-    Load and preprocess the soccer dataset.
+    Function to load and preprocess the soccer dataset.
     """
     header = ["height_cm", "short_passing", "vision", "crossing", "position"]
     data = [
@@ -14,15 +13,15 @@ def load_soccer_data():
         [165, "medium", "low", "medium", "Goalkeeper"],
     ]
 
-    # Separate features and labels
-    X_train = [row[:-1] for row in data]
-    y_train = [row[-1] for row in data]
+    X_train = [row[:-1] for row in data]  # Features
+    y_train = [row[-1] for row in data]  # Target labels
     return header, X_train, y_train
 
 # Step 2: Create and train the decision tree
 def build_and_pickle_decision_tree():
     header, X_train, y_train = load_soccer_data()
     tree_classifier = MyDecisionTreeClassifier()
+    tree_classifier.header = header  # Explicitly set the header
     tree_classifier.fit(X_train, y_train)
 
     # Save the decision tree and header to a pickle file
