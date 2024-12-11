@@ -1,16 +1,24 @@
-import requests  # a library for HTTP requests
-import json  # a library for parsing strings/JSON objects
+import requests  # For HTTP requests
+import json  # For JSON parsing
+import pickle  # To dynamically retrieve header attributes
+
+# Load the header attributes dynamically from the pickled tree
+def load_tree_header():
+    try:
+        with open("soccer_tree.p", "rb") as infile:
+            header, _ = pickle.load(infile)
+        return header
+    except Exception as e:
+        print(f"Error loading tree header: {e}")
+        return []
+
+header = load_tree_header()
 
 # Base URL for the soccer position prediction app
 url = "https://cpsc322-final-project-f3on.onrender.com/predict?"
 
-# Add soccer-specific query parameters
-query_params = {
-    "height_cm": 180,          # Example height in cm
-    "short_passing": 85,       # Example short passing skill level
-    "vision": 78,              # Example vision skill level
-    "crossing": 70             # Example crossing skill level
-}
+# Define example input values for query parameters
+query_params = {attr: input(f"Enter value for {attr}: ") for attr in header}
 
 # Append query parameters to the URL
 query_string = "&".join([f"{key}={value}" for key, value in query_params.items()])
@@ -27,7 +35,6 @@ print("Status code:", response.status_code)
 if response.status_code == 200:
     # Parse the JSON response
     json_obj = json.loads(response.text)
-    print("Response type:", type(json_obj))
     print("Response JSON:", json_obj)
 
     # Print the predicted position
