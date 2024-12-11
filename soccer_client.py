@@ -4,11 +4,11 @@ import json
 # Define the local API base URL
 url = "http://127.0.0.1:5000/predict"
 
-# Example input values (updated keys to remove problematic characters)
+# Example input values
 example_data = {
     "height_cm": "180",
     "positions": "Forward",
-    "skill_moves": "4",  # Updated key
+    "skill_moves": "4",
     "crossing": "85",
     "finishing": "90",
     "short_passing": "80",
@@ -27,6 +27,12 @@ example_data = {
     "marking": "30",
     "standing_tackle": "50"
 }
+
+# Validate input data
+missing_keys = [key for key, value in example_data.items() if not value]
+if missing_keys:
+    print(f"Error: Missing or invalid values for the following keys: {missing_keys}")
+    exit(1)
 
 # Display the request URL for debugging
 request_url = f"{url}?{'&'.join([f'{key}={value}' for key, value in example_data.items()])}"
