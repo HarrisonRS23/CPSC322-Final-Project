@@ -4,10 +4,10 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# Load the soccer decision tree and header once at startup
+# Load the soccer decision tree and header
 def load_tree():
     try:
-        with open("soccer_tree.p", "rb") as infile:  # Ensure this matches your pickled tree file
+        with open("soccer_tree.p", "rb") as infile:
             header, tree = pickle.load(infile)
         return header, tree
     except Exception as e:
@@ -20,32 +20,28 @@ header, soccer_tree = load_tree()
 def index_page():
     prediction = ""
     if request.method == "POST":
-        # Parse form inputs dynamically from the header
         try:
+            # Parse form inputs dynamically based on the header
             instance = [request.form.get(attr, "") for attr in header]
             prediction = predict_player_position(instance)
         except Exception as e:
             print(f"Error processing form input: {e}")
             prediction = "Invalid input"
-    print("Prediction:", prediction)
     return render_template("index.html", prediction=prediction)
-
 
 @app.route("/predict", methods=["GET"])
 def predict():
     try:
-        # Parse query string inputs dynamically from the header
+        # Parse query string inputs dynamically based on the header
         instance = [request.args.get(attr, "") for attr in header]
         prediction = predict_player_position(instance)
         if prediction is not None:
-            result = {"prediction": prediction}
-            return jsonify(result), 200
+            return jsonify({"prediction": prediction}), 200
         else:
             return "Error making prediction", 400
     except Exception as e:
         print(f"Error in prediction API: {e}")
         return "Error making prediction", 400
-
 
 def tdidt_classifier(tree, header, instance):
     """
@@ -60,21 +56,18 @@ def tdidt_classifier(tree, header, instance):
             if value_list[1] == test_value:
                 return tdidt_classifier(value_list[2], header, instance)
     elif info_type == "Leaf":
-        return tree[1]  # Return the class label from the leaf
-    else:
-        return None
-
+        return tree[1]
+    return None
 
 def predict_player_position(unseen_instance):
     """
-    Predicts the position of a soccer player using the decision tree.
+    Predict the position of a soccer player using the decision tree.
     """
     try:
         return tdidt_classifier(soccer_tree, header, unseen_instance)
     except Exception as e:
         print(f"Error predicting position: {e}")
         return None
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -4,22 +4,19 @@ from mysklearn.myclassifiers import MyDecisionTreeClassifier
 # Step 1: Load and preprocess your soccer dataset
 def load_soccer_data():
     """
-    Function to load and preprocess the soccer dataset.
-    Replace this with your actual dataset loading and preprocessing logic.
+    Load and preprocess the soccer dataset.
     """
-    # Example header and dataset
     header = ["height_cm", "short_passing", "vision", "crossing", "position"]
     data = [
         [180, "high", "high", "medium", "Midfielder"],
         [175, "low", "medium", "low", "Defender"],
         [170, "high", "low", "high", "Forward"],
         [165, "medium", "low", "medium", "Goalkeeper"],
-        # Add more rows of data here
     ]
 
     # Separate features and labels
-    X_train = [row[:-1] for row in data]  # All columns except the last one
-    y_train = [row[-1] for row in data]  # Only the last column
+    X_train = [row[:-1] for row in data]
+    y_train = [row[-1] for row in data]
     return header, X_train, y_train
 
 # Step 2: Create and train the decision tree
