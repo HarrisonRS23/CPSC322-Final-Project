@@ -52,10 +52,18 @@ def load_and_preprocess_data():
 def build_and_pickle_decision_tree():
     """
     Build and pickle the decision tree using the FIFA dataset.
+
+    
     """
     header, X_train, y_train = load_and_preprocess_data()
     tree_classifier = MyDecisionTreeClassifier()
-    tree_classifier.header = header  # Set the header explicitly
+    tree_classifier.header = header  # Use meaningful attribute names
+
+    header = ["height_cm", "positions", "skill_moves(1-5)", "crossing", "finishing",
+          "short_passing", "dribbling", "freekick_accuracy", "long_passing",
+          "ball_control", "acceleration", "agility", "shot_power", "stamina",
+          "long_shots", "interceptions", "positioning", "vision", "marking",
+          "standing_tackle"]
     tree_classifier.fit(X_train, y_train)
 
     # Save the decision tree and header to a pickle file

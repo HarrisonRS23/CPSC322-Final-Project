@@ -1,99 +1,37 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <title>Soccer Position Predictor</title>
     <style>
-        * {
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: rgb(219, 226, 226);
-        }
-        .row {
-            background: white;
-            border-radius: 30px;
-            box-shadow: 12px 12px 22px grey;
-        }
-        img {
-            border-top-left-radius: 30px;
-            border-bottom-left-radius: 30px;
-        }
-        .container {
-            position: relative;
-        }
-        .btn1 {
-            width: 100%;
-        }
-        .btn2 {
-            width: 57%;
-        }
-        .center1 {
-            padding-top: 100px;
-            margin: auto;
-        }
+        body { background: rgb(219, 226, 226); }
+        .container { padding-top: 50px; }
+        .row { background: white; border-radius: 10px; padding: 20px; box-shadow: 5px 5px 15px gray; }
     </style>
   </head>
   <body>
-
-    <section class="Form my-4 mx-4 center1">
-        <div class="container">
-            <div class="row no-gutters">
-                <div class="col-lg-5">
-                    <img src="https://upload.wikimedia.org/wikipedia/en/e/e0/FIFA_World_Cup_2022_logo.svg" class="img-fluid mt-5" alt="Soccer Prediction">
-                </div>
-                <div class="col-lg-7 px-5 pt-5">
-                    <h1 class="font-weight-bold py-3">Soccer Position Predictor</h1>
-                    <p>Enter player statistics to predict their position on the field.</p>
-                    <form action="/" method="post">
-                        <div class="form-row">
-                            <div class="col-lg-7">
-                                <input type="text" placeholder="Height (cm)" name="height_cm" class="form-control my-1 p-2" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="col-lg-7">
-                                <input type="text" placeholder="Short Passing" name="short_passing" class="form-control my-1 p-2" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="col-lg-7">
-                                <input type="text" placeholder="Vision" name="vision" class="form-control my-1 p-2" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="col-lg-7">
-                                <input type="text" placeholder="Crossing" name="crossing" class="form-control my-1 p-2" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="col-lg-7">
-                                <button type="submit" class="btn btn-outline-primary mt-3 mb-3 p-2 btn1">Predict Position</button>
-                            </div>
-                        </div>
-                        {% if prediction %}
-                            <button type="button" class="btn btn-success mb-4 p-2 btn2">{{ prediction }}</button>
-                        {% else %}
-                            <button type="button" class="btn btn-warning mb-4 p-2 btn2">Awaiting Prediction...</button>
-                        {% endif %}
-                    </form>
-                </div>
-            </div>
+    <div class="container">
+      <h1 class="text-center mb-4">Soccer Position Predictor</h1>
+      <div class="row">
+        <form action="/" method="post" class="w-100">
+          {% for field in header %}
+          <div class="form-group">
+            <label for="{{ field }}">{{ field.replace('_', ' ').title() }}</label>
+            <input type="text" name="{{ field }}" class="form-control" placeholder="Enter {{ field }}" required>
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary btn-block">Predict Position</button>
+        </form>
+      </div>
+      {% if prediction %}
+      <div class="row mt-4">
+        <div class="col text-center">
+          <h2>Predicted Position: <span class="text-success">{{ prediction }}</span></h2>
         </div>
-    </section>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+      </div>
+      {% endif %}
+    </div>
   </body>
 </html>
